@@ -1,0 +1,43 @@
+loglevel("info")
+
+go fn{
+    tcp.Serve("192.168.142.130", 8085, tcp.serverCallback(func(conn) {
+        defer conn.Close()
+        println("建立连接：", conn.RemoteAddr())
+
+        bytes, err := conn.Recv()
+        if err != nil {
+            conn.Close()
+            return
+        }
+        println(string(bytes))
+        for true{
+            commond = input("输入需要执行的命令（输入 exit 退出）: ")
+            println("下发命令："+commond)
+            if commond == "exit" {
+                println("连接关闭")
+                break
+            }
+
+            err := conn.Send(commond)
+            if  err != nil {
+                println("发送失败:", err)
+                break
+            }
+
+            for true{
+                result, err := conn.Recv()
+                if err == nil {
+                    println("执行结果：\n", result)
+                    break
+                } else {
+                    continue
+                }
+            }
+        }
+    }))
+}
+
+for {
+    sleep(1)
+}
